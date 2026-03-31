@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type WineType = "hvit" | "rød" | "oransje" | "rosé" | "musserende";
 
@@ -13,24 +13,26 @@ interface Wine {
 }
 
 const initialWines: Wine[] = [
-  { produsent: "Domaine Leflaive", cuvee: "Puligny-Montrachet", argang: 2021, land: "Frankrike", drue: "Chardonnay", type: "hvit", score: 9 },
-  { produsent: "Château Pichon Baron", cuvee: "Pichon Baron", argang: 2018, land: "Frankrike", drue: "Cabernet Sauvignon", type: "rød", score: 8 },
-  { produsent: "Radikon", cuvee: "Ribolla", argang: 2019, land: "Italia", drue: "Ribolla Gialla", type: "oransje", score: 9 },
-  { produsent: "Movia", cuvee: "Lunar", argang: 2020, land: "Slovenia", drue: "Pinot Grigio", type: "oransje", score: 7 },
-  { produsent: "Château d'Esclans", cuvee: "Whispering Angel", argang: 2022, land: "Frankrike", drue: "Grenache", type: "rosé", score: 8 },
-  { produsent: "Barolo Cascina Francia", cuvee: "Barolo", argang: 2017, land: "Italia", drue: "Nebbiolo", type: "rød", score: 10 },
-  { produsent: "Weingut Knoll", cuvee: "Loibner Federspiel", argang: 2020, land: "Østerrike", drue: "Grüner Veltliner", type: "hvit", score: 8 },
-  { produsent: "Domaine Weinbach", cuvee: "Cuvée Théo", argang: 2019, land: "Frankrike", drue: "Riesling", type: "hvit", score: 9 },
-  { produsent: "Mas de Daumas Gassac", cuvee: "Rouge", argang: 2016, land: "Frankrike", drue: "Cabernet Sauvignon", type: "rød", score: 7 },
-  { produsent: "Château Simone", cuvee: "Palette Rouge", argang: 2021, land: "Frankrike", drue: "Grenache", type: "rosé", score: 8 },
+  { produsent: "Radikon", cuvee: "Ribolla Gialla", argang: 2016, land: "Italia", drue: "Ribolla Gialla", type: "oransje", score: 10 },
+  { produsent: "Gravner", cuvee: "Ribolla", argang: 2013, land: "Italia", drue: "Ribolla Gialla", type: "oransje", score: 10 },
+  { produsent: "COS", cuvee: "Pithos Bianco", argang: 2020, land: "Italia", drue: "Grecanico", type: "oransje", score: 9 },
+  { produsent: "Lamoresca", cuvee: "Bianco", argang: 2021, land: "Italia", drue: "Nerello Mascalese", type: "oransje", score: 9 },
+  { produsent: "Foradori", cuvee: "Fontanasanta Nosiola", argang: 2019, land: "Italia", drue: "Nosiola", type: "oransje", score: 9 },
+  { produsent: "Dard & Ribo", cuvee: "Crozes-Hermitage", argang: 2020, land: "Frankrike", drue: "Syrah", type: "rød", score: 10 },
+  { produsent: "Overnoy-Houillon", cuvee: "Arbois Pupillin Rouge", argang: 2018, land: "Frankrike", drue: "Poulsard", type: "rød", score: 10 },
+  { produsent: "Cornelissen", cuvee: "Susucaru Rosso", argang: 2021, land: "Italia", drue: "Nerello Mascalese", type: "rød", score: 9 },
+  { produsent: "Gut Oggau", cuvee: "Theodora", argang: 2020, land: "Østerrike", drue: "Welschriesling", type: "hvit", score: 9 },
+  { produsent: "La Stoppa", cuvee: "Ageno", argang: 2017, land: "Italia", drue: "Malvasia", type: "oransje", score: 10 },
+  { produsent: "Sébastien Riffault", cuvee: "Auksinis", argang: 2019, land: "Frankrike", drue: "Sauvignon Blanc", type: "hvit", score: 9 },
+  { produsent: "Denavolo", cuvee: "Dinavolino", argang: 2020, land: "Italia", drue: "Malvasia", type: "oransje", score: 9 },
 ];
 
 const typeConfig: Record<WineType, { label: string; icon: string; color: string; bg: string }> = {
-  hvit:    { label: "Hvit",    icon: "🥂", color: "#8B7536", bg: "#FDF8E8" },
+  hvit:    { label: "Hvit",    icon: "🥂", color: "#7A6318", bg: "#FDF8E8" },
   rød:     { label: "Rød",     icon: "🍷", color: "#8B1A1A", bg: "#FFF0F0" },
   oransje: { label: "Oransje", icon: "🍊", color: "#B5540C", bg: "#FFF4E8" },
   rosé:       { label: "Rosé",       icon: "🌸", color: "#B5456A", bg: "#FFF0F5" },
-  musserende: { label: "Musserende", icon: "🫧", color: "#2E6B8A", bg: "#EFF7FC" },
+  musserende: { label: "Musserende", icon: "🍾", color: "#1A4F6A", bg: "#D6EEF8" },
 };
 
 const emptyForm: Wine = {
@@ -93,13 +95,16 @@ function WineModal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
       style={{ backgroundColor: "rgba(59,31,31,0.35)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="w-full max-w-md rounded-2xl shadow-xl p-6" style={{ backgroundColor: "#FCF6EE" }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold" style={{ color: "#3B1F1F" }}>{title}</h2>
+          <h2 id="modal-title" className="text-xl font-bold" style={{ color: "#3B1F1F" }}>{title}</h2>
           <button
             onClick={onClose}
             className="text-lg leading-none px-2 py-1 rounded-lg hover:bg-black/5 transition"
@@ -230,18 +235,38 @@ function WineModal({
   );
 }
 
+const STORAGE_KEY = "rett-i-nebbet-viner";
+
+function loadWines(): Wine[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : initialWines;
+  } catch {
+    return initialWines;
+  }
+}
+
 export default function WineTable() {
-  const [wines, setWines] = useState<Wine[]>(initialWines);
+  const [wines, setWines] = useState<Wine[]>(loadWines);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  const addWine = (wine: Wine) => setWines((prev) => [wine, ...prev]);
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(wines));
+  }, [wines]);
+
+  const saveWines = (updated: Wine[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    setWines(updated);
+  };
+
+  const addWine = (wine: Wine) => saveWines([wine, ...wines]);
 
   const updateWine = (wine: Wine) =>
-    setWines((prev) => prev.map((w, i) => (i === editIndex ? wine : w)));
+    saveWines(wines.map((w, i) => (i === editIndex ? wine : w)));
 
   return (
-    <div className="min-h-screen px-6 py-12" style={{ backgroundColor: "#FCF6EE" }}>
+    <main className="min-h-screen px-6 py-12" style={{ backgroundColor: "#FCF6EE" }}>
       {showAddModal && (
         <WineModal
           title="Legg til vin"
@@ -289,7 +314,7 @@ export default function WineTable() {
                   <th
                     key={i}
                     className="text-left px-5 py-4 text-xs font-semibold uppercase tracking-wider"
-                    style={{ color: "#9C7E6B" }}
+                    style={{ color: "#5C4A3E" }}
                   >
                     {h}
                   </th>
@@ -327,7 +352,7 @@ export default function WineTable() {
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
                         style={{ backgroundColor: cfg.bg, color: cfg.color }}
                       >
-                        <span>{cfg.icon}</span>
+                        <span aria-hidden="true">{cfg.icon}</span>
                         {cfg.label}
                       </span>
                     </td>
@@ -348,7 +373,7 @@ export default function WineTable() {
                           </svg>
                         </button>
                         <button
-                          onClick={() => setWines((prev) => prev.filter((_, j) => j !== i))}
+                          onClick={() => saveWines(wines.filter((_, j) => j !== i))}
                           className="p-2 rounded-lg border transition hover:bg-red-50"
                           style={{ borderColor: "#E8DDD4", color: "#B8A89A" }}
                           title="Slett"
@@ -374,6 +399,6 @@ export default function WineTable() {
           {wines.length} viner registrert
         </p>
       </div>
-    </div>
+    </main>
   );
 }
